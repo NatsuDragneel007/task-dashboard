@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Team Task Dashboard</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    .task {
+      background: white;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 Team Task Dashboard</h1>
+  <div id="taskList">Loading...</div>
+
+  <script>
+    fetch("https://n8n.yourdomain.com/webhook/client-tasks")
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("taskList");
+        container.innerHTML = "";
+        data.tasks.forEach(task => {
+          container.innerHTML += `
+            <div class="task">
+              <strong>${task.task}</strong><br>
+              <em>${task.team_member}</em> – ${task.date}<br>
+              Status: <b>${task.status}</b><br>
+              Priority: ${task.priority}<br>
+              Notes: ${task.notes}
+            </div>
+          `;
+        });
+      })
+      .catch(err => {
+        document.getElementById("taskList").innerText = "Failed to load tasks.";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
