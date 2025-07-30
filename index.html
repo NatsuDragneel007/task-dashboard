@@ -2,123 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Team Task Dashboard</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f9f9f9;
-    }
-
-    header {
-      background-color: #0d47a1;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .container {
-      padding: 20px;
-    }
-
-    .task-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .task-header {
-      font-size: 18px;
-      font-weight: bold;
-      color: #0d47a1;
-    }
-
-    .task-details {
-      margin-top: 8px;
-      font-size: 15px;
-      line-height: 1.6;
-    }
-
-    .high {
-      border-left: 6px solid #d32f2f;
-    }
-
-    .medium {
-      border-left: 6px solid #fbc02d;
-    }
-
-    .low {
-      border-left: 6px solid #388e3c;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AiForge Task Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
-<body>
-  <header>
-    <h1>📝 Team Task Dashboard</h1>
-  </header>
+<body class="bg-gray-50 text-gray-900 font-sans p-6">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">🛠️ AiForge - Team Task Dashboard</h1>
 
-  <div class="container" id="taskList">
-    <!-- Tasks will be added here by script -->
+    <div class="flex justify-between mb-4">
+      <button 
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        hx-get="https://n8n.mycompany.in/webhook/client-tasks" 
+        hx-target="#taskGrid" 
+        hx-swap="innerHTML"
+      >
+        🔁 Refresh Tasks
+      </button>
+    </div>
+
+    <!-- Task Grid -->
+    <div id="taskGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Tasks will load here from n8n -->
+      <div class="text-gray-400 italic">Click "Refresh Tasks" to load today's tasks.</div>
+    </div>
   </div>
-
-  <script>
-    const tasks = [
-      {
-        name: "Nilesh",
-        date: "2025-07-29",
-        task: "Design new Instagram carousel",
-        status: "To-Do",
-        priority: "High",
-        notes: "Deadline 5PM"
-      },
-      {
-        name: "Riya",
-        date: "2025-07-29",
-        task: "Client follow-up call",
-        status: "Delayed",
-        priority: "Medium",
-        notes: "Waiting for documents"
-      },
-      {
-        name: "Shubham",
-        date: "2025-07-29",
-        task: "Edit ad video",
-        status: "In Progress",
-        priority: "Low",
-        notes: "Needs background music"
-      }
-    ];
-
-    const priorityClass = {
-      High: 'high',
-      Medium: 'medium',
-      Low: 'low'
-    };
-
-    const taskList = document.getElementById("taskList");
-
-    // Sort by priority: High > Medium > Low
-    const priorityRank = { High: 1, Medium: 2, Low: 3 };
-    tasks.sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority]);
-
-    tasks.forEach(task => {
-      const card = document.createElement("div");
-      card.className = `task-card ${priorityClass[task.priority]}`;
-      card.innerHTML = `
-        <div class="task-header">👤 ${task.name} - 📅 ${task.date}</div>
-        <div class="task-details">
-          ✅ <strong>Task:</strong> ${task.task}<br>
-          🔁 <strong>Status:</strong> ${task.status}<br>
-          🎯 <strong>Priority:</strong> ${task.priority}<br>
-          🗒️ <strong>Notes:</strong> ${task.notes || "None"}
-        </div>
-      `;
-      taskList.appendChild(card);
-    });
-  </script>
 </body>
 </html>
