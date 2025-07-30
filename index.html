@@ -3,29 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AiForge Task Manager</title>
+  <title>AiForge - Daily Task Manager</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans p-6">
-  <div class="max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">🛠️ AiForge - Team Task Dashboard</h1>
+<body class="bg-gray-100 text-gray-900 font-sans p-6">
+  <div class="max-w-6xl mx-auto">
+    <header class="mb-6">
+      <h1 class="text-4xl font-bold">🧠 AiForge - Team Task Dashboard</h1>
+      <p class="text-lg text-gray-600">Simplified AI solutions for EVERYONE</p>
+    </header>
 
-    <div class="flex justify-between mb-4">
+    <!-- Filter Controls -->
+    <div class="flex flex-wrap gap-4 mb-6">
+      <select class="px-3 py-2 border rounded" id="teamSelect">
+        <option value="">All Team Members</option>
+        <option value="riya">Riya</option>
+        <option value="nilesh">Nilesh</option>
+        <option value="shubham">Shubham</option>
+        <!-- Add more dynamically -->
+      </select>
+
+      <select class="px-3 py-2 border rounded" id="prioritySelect">
+        <option value="">All Priorities</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
       <button 
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-        hx-get="https://rupalibhosale.app.n8n.cloud/webhook-test/webhook/client-tasks" 
-        hx-target="#taskGrid" 
+        hx-get="https://n8n.mycompany.in/webhook/client-tasks"
+        hx-params="teamSelect,prioritySelect"
+        hx-target="#taskGrid"
         hx-swap="innerHTML"
       >
-        🔁 Refresh Tasks
+        🔄 Load Tasks
       </button>
     </div>
 
     <!-- Task Grid -->
-    <div id="taskGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Tasks will load here from n8n -->
-      <div class="text-gray-400 italic">Click "Refresh Tasks" to load today's tasks.</div>
+    <div id="taskGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="text-gray-400 italic">Click "Load Tasks" to view assigned items.</div>
+    </div>
+
+    <!-- Add Task Form -->
+    <div class="mt-10 p-6 bg-white rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">➕ Add New Task</h2>
+      <form hx-post="https://n8n.mycompany.in/webhook/add-task" hx-trigger="submit" hx-target="#taskGrid" hx-swap="afterbegin">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" name="task" placeholder="Task description" required class="border p-2 rounded" />
+          <input type="text" name="team_member" placeholder="Assign to (e.g. Priya)" required class="border p-2 rounded" />
+          <select name="priority" class="border p-2 rounded">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select name="status" class="border p-2 rounded">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Done">Done</option>
+          </select>
+        </div>
+        <button type="submit" class="mt-4 bg-green-600 text-white px-4 py-2 rounded">Add Task</button>
+      </form>
     </div>
   </div>
 </body>
