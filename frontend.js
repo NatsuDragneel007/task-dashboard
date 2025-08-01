@@ -1,23 +1,33 @@
-const payload = {
-  "Date": dateValue,
-  "Team Member": teamMemberValue,
-  "Task": taskValue,
-  "Status": statusValue,
-  "Priority": priorityValue,
-  "Notes": notesValue
-};
+async function loadTasks() {
+  try {
+    const response = await fetch("https://n8n.yourdomain.in/webhook/tasks");
+    const data = await response.json();
 
-fetch("https://n8n.mycompany.in/webhook/create-task-db", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(payload)
-})
-.then(res => res.json())
-.then(data => {
-  alert(data.message);  // Show success message
-})
-.catch(err => {
-  console.error("Error submitting task:", err);
-});
+    if (!data.tasks || !Array.isArray(data.tasks)) {
+      throw new Error("Unexpected response format.");
+    }
+
+    const taskList = document.getElementById("taskList");
+    taskList.innerHTML = "";
+
+    data.tasks.forEach(task => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${task.date?.split("T")[0] || ""}</td>
+        <td>${task.team_member || ""}</td>
+        <td>${task.task || ""}</td>
+        <td>${task.status || ""}</td>
+        <td><span class="priority-${task.priority?.toLowerCase()}">${task.priority || ""}</span></td>
+        <td>${task.notes || ""}</td>
+      `;
+      taskList.appendChild(row);
+    });
+  } catch (error) {
+    const taskList = document.getElementById("taskList");
+    if (taskList) {
+      taskList.innerHTML = `<tr><td colspan="6">❌ Failed to load tasks:<br>${error}</td></tr>`;
+    }
+  }
+}
+
+window.addEventListener("DOMContentLoaded", loadTasks);
