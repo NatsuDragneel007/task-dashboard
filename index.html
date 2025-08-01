@@ -45,6 +45,55 @@
       box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
+    <!-- Task Creation Modal -->
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="create-task-form">
+          <div class="mb-2">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" id="taskDate" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Team Member</label>
+            <input type="text" class="form-control" id="taskMember" placeholder="e.g. Riya" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Task</label>
+            <input type="text" class="form-control" id="taskDescription" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Priority</label>
+            <select class="form-select" id="taskPriority" required>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="taskStatus" required>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="taskNotes" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary mt-2 w-100">Create Task</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
   </style>
 </head>
 <body>
@@ -105,7 +154,8 @@
 </div>
 
 <!-- Floating Add Button -->
-<button class="floating-btn" onclick="alert('Coming Soon: Add Task')">+</button>
+<button class="floating-btn" data-bs-toggle="modal" data-bs-target="#createTaskModal">+</button>
+
 
 <script>
   let allTasks = [];
@@ -180,6 +230,54 @@
 
   window.onload = fetchTasks;
 </script>
+<!-- Task Creation Modal -->
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="create-task-form">
+          <div class="mb-2">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" id="taskDate" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Team Member</label>
+            <input type="text" class="form-control" id="taskMember" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Task</label>
+            <input type="text" class="form-control" id="taskDescription" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Priority</label>
+            <select class="form-select" id="taskPriority" required>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="taskStatus" required>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" id="taskNotes" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary mt-2 w-100">Create Task</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
