@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Team Task Dashboard</title>
   <style>
     body {
@@ -8,41 +10,98 @@
       padding: 20px;
       background: #f9f9f9;
     }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
     .task {
       background: white;
-      padding: 12px;
-      margin-bottom: 10px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      border-left: 6px solid #ccc;
       border-radius: 8px;
       box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+
+    .task.high {
+      border-left-color: red;
+    }
+
+    .task.medium {
+      border-left-color: orange;
+    }
+
+    .task.low {
+      border-left-color: green;
+    }
+
+    .empty {
+      color: #777;
+      font-style: italic;
     }
   </style>
 </head>
 <body>
   <h1>📋 Team Task Dashboard</h1>
+  <button onclick="loadTasks()">🔄 Refresh Tasks</button>
   <div id="taskList">Loading...</div>
 
   <script>
-    fetch("https://rupalibhosale.app.n8n.cloud/webhook-test/webhook/client-tasks")
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById("taskList");
-        container.innerHTML = "";
-        data.tasks.forEach(task => {
-          container.innerHTML += `
-            <div class="task">
-              <strong>${task.task}</strong><br>
-              <em>${task.team_member}</em> – ${task.date}<br>
-              Status: <b>${task.status}</b><br>
-              Priority: ${task.priority}<br>
-              Notes: ${task.notes}
-            </div>
-          `;
+    const WEBHOOK_URL = "https://rupalibhosale.app.n8n.cloud/webhook-test/webhook/client-tasks";
+
+    function loadTasks() {
+      document.getElementById("taskList").innerText = "Loading...";
+
+      fetch(WEBHOOK_URL)
+        .then(res => {
+          if (!res.ok) throw new Error("Server error");
+          return res.json();
+        })
+        .then(data => {
+          const container = document.getElementById("taskList");
+          container.innerHTML = "";
+
+          if (!data.tasks || data.tasks.length === 0) {
+            container.innerHTML = "<div class='empty'>No tasks available.</div>";
+            return;
+          }
+
+          data.tasks.forEach(task => {
+            const priorityClass = task.priority.toLowerCase();
+            container.innerHTML += `
+              <div class="task ${priorityClass}">
+                <strong>${task.task}</strong><br>
+                <em>${task.team_member}</em> – ${task.date}<br>
+                Status: <b>${task.status}</b><br>
+                Priority: ${task.priority}<br>
+                Notes: ${task.notes}
+              </div>
+            `;
+          });
+        })
+        .catch(err => {
+          document.getElementById("taskList").innerText = "❌ Failed to load tasks.";
+          console.error(err);
         });
-      })
-      .catch(err => {
-        document.getElementById("taskList").innerText = "Failed to load tasks.";
-        console.error(err);
-      });
+    }
+
+    loadTasks(); // Load on page load
   </script>
 </body>
 </html>
