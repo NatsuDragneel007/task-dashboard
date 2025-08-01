@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Push Dummy Tasks to n8n</title>
+</head>
+<body>
+  <h2>Pushing Dummy Tasks to n8n...</h2>
+  <div id="log" style="font-family: monospace;"></div>
+
+  <script>
+    const WEBHOOK_URL = "https://rupalibhosale.app.n8n.cloud/webhook-test/create-task-db"; // 🔁 Replace with your actual n8n webhook URL
+
+    const teamMembers = [
+      "Priya", "Aditya", "Nilesh", "Riya", "Shubham", "Aarti", "Kunal", "Neha", "Sahil", "Divya",
+      "Rahul", "Pooja", "Varun", "Sneha", "Arjun", "Megha", "Aman", "Isha", "Dev", "Anita",
+      "Kiran", "Raj", "Tina", "Ankur", "Simran"
+    ];
+
+    const priorities = ["High", "Medium", "Low"];
+    const statuses = ["Pending", "In Progress", "Completed"];
+    const tasks = [
+      "Prepare report", "Update client sheet", "Fix bug", "Design banner", "Review marketing",
+      "Test deployment", "Conduct QA", "Plan event", "Reply to emails", "Optimize speed",
+      "Create wireframe", "Lead team call", "Manage social media", "Run analytics", "Write blog",
+      "Post on LinkedIn", "Export leads", "Sync database", "Schedule post", "Set up Zoom call"
+    ];
+
+    const today = new Date().toISOString().split("T")[0];
+    const logDiv = document.getElementById("log");
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    async function pushDummyTasks() {
+      for (let i = 1; i <= 100; i++) {
+        const payload = {
+          Date: today,
+          "Team Member": randomItem(teamMembers),
+          Task: randomItem(tasks) + ` #${i}`,
+          Status: randomItem(statuses),
+          Priority: randomItem(priorities),
+          Notes: `Auto-generated task ${i}`
+        };
+
+        try {
+          const res = await fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await res.json();
+          const msg = `✅ Task ${i} sent: ${result.message || "Success"}<br>`;
+          logDiv.innerHTML += msg;
+          console.log(msg);
+        } catch (err) {
+          const errorMsg = `❌ Task ${i} failed: ${err.message}<br>`;
+          logDiv.innerHTML += errorMsg;
+          console.error(errorMsg);
+        }
+      }
+    }
+
+    pushDummyTasks();
+  </script>
+</body>
+</html>
