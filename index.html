@@ -161,23 +161,40 @@
   fetch("https://rupalibhosale.app.n8n.cloud/webhook-test/client-tasks")
     .then(res => res.json())
     .then(data => {
-      const container = document.getElementById("taskList");
-      container.innerHTML = "";
+      const tableBody = document.getElementById("task-table-body");
+      tableBody.innerHTML = "";
+
+      const uniqueMembers = new Set();
+
       data.tasks.forEach(task => {
-        container.innerHTML += `
-          <div class="task">
-            <strong>${task.task}</strong><br>
-            <em>${task.team_member}</em> – ${task.date.split("T")[0]}<br>
-            Status: <b>${task.status}</b><br>
-            Priority: ${task.priority}<br>
-            Notes: ${task.notes}
-          </div>
+        uniqueMembers.add(task.team_member);
+
+        const row = `
+          <tr>
+            <td>${task.date.split("T")[0]}</td>
+            <td>${task.team_member}</td>
+            <td>${task.task}</td>
+            <td>${task.status}</td>
+            <td>
+              <span class="priority-${task.priority.toLowerCase()}">${task.priority}</span>
+            </td>
+            <td>${task.notes}</td>
+          </tr>
         `;
+        tableBody.innerHTML += row;
+      });
+
+      // Populate team member filter dropdown
+      const memberFilter = document.getElementById("filterMember");
+      memberFilter.innerHTML = '<option value="">All Team Members</option>';
+      uniqueMembers.forEach(member => {
+        memberFilter.innerHTML += `<option value="${member}">${member}</option>`;
       });
     })
     .catch(err => {
-      document.getElementById("taskList").innerText = "❌ Failed to load tasks.";
-      console.error(err);
+      console.error("❌ Failed to load tasks:", err);
+      const tableBody = document.getElementById("task-table-body");
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-danger">Failed to load data</td></tr>`;
     });
 </script>
 
