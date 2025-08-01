@@ -158,45 +158,32 @@
 
 
 <script>
-  fetch("https://rupalibhosale.app.n8n.cloud/webhook-test/client-tasks")
+  fetch("https://YOUR-N8N-WEBHOOK-URL")
     .then(res => res.json())
     .then(data => {
-      const tableBody = document.getElementById("task-table-body");
-      tableBody.innerHTML = "";
-
-      const uniqueMembers = new Set();
+      const container = document.getElementById("taskList");
+      container.innerHTML = "";
 
       data.tasks.forEach(task => {
-        uniqueMembers.add(task.team_member);
-
-        const row = `
-          <tr>
-            <td>${task.date.split("T")[0]}</td>
-            <td>${task.team_member}</td>
-            <td>${task.task}</td>
-            <td>${task.status}</td>
-            <td>
-              <span class="priority-${task.priority.toLowerCase()}">${task.priority}</span>
-            </td>
-            <td>${task.notes}</td>
-          </tr>
+        const taskHTML = `
+          <div class="task">
+            <strong>${task.task}</strong><br>
+            👤 <b>${task.team_member}</b><br>
+            📅 ${new Date(task.date).toLocaleDateString()}<br>
+            ✅ Status: <b>${task.status}</b><br>
+            ⚡ Priority: ${task.priority}<br>
+            🗒️ Notes: ${task.notes}
+          </div>
         `;
-        tableBody.innerHTML += row;
-      });
-
-      // Populate team member filter dropdown
-      const memberFilter = document.getElementById("filterMember");
-      memberFilter.innerHTML = '<option value="">All Team Members</option>';
-      uniqueMembers.forEach(member => {
-        memberFilter.innerHTML += `<option value="${member}">${member}</option>`;
+        container.innerHTML += taskHTML;
       });
     })
     .catch(err => {
-      console.error("❌ Failed to load tasks:", err);
-      const tableBody = document.getElementById("task-table-body");
-      tableBody.innerHTML = `<tr><td colspan="6" class="text-danger">Failed to load data</td></tr>`;
+      document.getElementById("taskList").innerText = "❌ Failed to load tasks.";
+      console.error(err);
     });
 </script>
+
 
 <!-- Task Creation Modal -->
 <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
