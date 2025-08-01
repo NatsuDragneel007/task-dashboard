@@ -158,78 +158,29 @@
 
 
 <script>
-  let allTasks = [];
-
-  async function fetchTasks() {
-    const res = await fetch('https://n8n.mycompany.in/webhook/task-data'); // Replace with your actual endpoint
-    allTasks = await res.json();
-    populateMemberFilter();
-    renderTasks(allTasks);
-  }
-
-  function renderTasks(tasks) {
-    const tableBody = document.getElementById('task-table-body');
-    tableBody.innerHTML = '';
-
-    tasks.forEach(task => {
-      const priorityClass = task.Priority === 'High' ? 'priority-high'
-                         : task.Priority === 'Medium' ? 'priority-medium'
-                         : 'priority-low';
-
-      const row = `
-        <tr>
-          <td>${task.Date}</td>
-          <td>${task["Team Member"]}</td>
-          <td>${task.Task}</td>
-          <td>${task.Status}</td>
-          <td><span class="${priorityClass}">${task.Priority}</span></td>
-          <td>${task.Notes}</td>
-        </tr>`;
-      tableBody.innerHTML += row;
+  fetch("https://YOUR_SUBDOMAIN.n8n.cloud/webhook/fetch-tasks")
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById("taskList");
+      container.innerHTML = "";
+      data.tasks.forEach(task => {
+        container.innerHTML += `
+          <div class="task">
+            <strong>${task.task}</strong><br>
+            <em>${task.team_member}</em> – ${task.date.split("T")[0]}<br>
+            Status: <b>${task.status}</b><br>
+            Priority: ${task.priority}<br>
+            Notes: ${task.notes}
+          </div>
+        `;
+      });
+    })
+    .catch(err => {
+      document.getElementById("taskList").innerText = "❌ Failed to load tasks.";
+      console.error(err);
     });
-  }
-
-  function populateMemberFilter() {
-    const memberSet = new Set(allTasks.map(t => t["Team Member"]));
-    const filter = document.getElementById('filterMember');
-    memberSet.forEach(member => {
-      const opt = document.createElement("option");
-      opt.value = member;
-      opt.innerText = member;
-      filter.appendChild(opt);
-    });
-  }
-
-  function applyFilters() {
-    const selectedMember = document.getElementById('filterMember').value;
-    const selectedStatus = document.getElementById('filterStatus').value;
-    const selectedPriority = document.getElementById('filterPriority').value;
-
-    const filtered = allTasks.filter(task => {
-      return (!selectedMember || task["Team Member"] === selectedMember)
-          && (!selectedStatus || task.Status === selectedStatus)
-          && (!selectedPriority || task.Priority === selectedPriority);
-    });
-
-    renderTasks(filtered);
-  }
-
-  function filterUrgent() {
-    const urgentTasks = allTasks.filter(task => task.Priority === 'High');
-    renderTasks(urgentTasks);
-  }
-
-  function filterFollowUp() {
-    const followUps = allTasks.filter(task => task.Notes.toLowerCase().includes('follow'));
-    renderTasks(followUps);
-  }
-
-  function showAll() {
-    renderTasks(allTasks);
-  }
-
-  window.onload = fetchTasks;
 </script>
+
 <!-- Task Creation Modal -->
 <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
