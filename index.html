@@ -1,299 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Team Task Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .priority-high {
-      color: #fff;
-      background-color: #dc3545;
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-    .priority-medium {
-      color: #fff;
-      background-color: #ffc107;
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-    .priority-low {
-      color: #fff;
-      background-color: #198754;
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-    .floating-btn {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      background-color: #0d6efd;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      font-size: 28px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-      cursor: pointer;
-    }
-    <!-- Task Creation Modal -->
-<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="create-task-form">
-          <div class="mb-2">
-            <label class="form-label">date</label>
-            <input type="date" class="form-control" id="taskDate" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">team member</label>
-            <input type="text" class="form-control" id="taskMember" placeholder="e.g. Riya" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Task</label>
-            <input type="text" class="form-control" id="taskDescription" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">priority</label>
-            <select class="form-select" id="taskPriority" required>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Status</label>
-            <select class="form-select" id="taskStatus" required>
-              <option value="Pending">pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Done">done</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">notes</label>
-            <textarea class="form-control" id="taskNotes" rows="2"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary mt-2 w-100">Create Task</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="p-4">
 
-<div class="container my-4">
-  <h2 class="mb-3">📋 Team Task Dashboard</h2>
+  <div class="container">
+    <h1 class="mb-4 text-center">📋 Daily Task Manager</h1>
 
-  <!-- Action Buttons -->
-  <div class="mb-4 d-flex flex-wrap gap-2">
-    <button class="btn btn-danger" onclick="filterUrgent()">🚨 Urgent Only</button>
-    <button class="btn btn-warning" onclick="filterFollowUp()">📌 Follow-Ups</button>
-    <button class="btn btn-secondary" onclick="showAll()">🔁 Show All</button>
-  </div>
-
-  <!-- Filters -->
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <select id="filterMember" class="form-select" onchange="applyFilters()">
-        <option value="">All Team Members</option>
-      </select>
+    <div class="mb-3 text-center">
+      <button class="btn btn-danger" onclick="filterUrgent()">🚨 Urgent Only</button>
+      <button class="btn btn-warning" onclick="filterFollowUp()">📌 Follow-Ups</button>
+      <button class="btn btn-secondary" onclick="showAll()">🔁 Show All</button>
     </div>
-    <div class="col-md-3">
-      <select id="filterStatus" class="form-select" onchange="applyFilters()">
-        <option value="">All Statuses</option>
-        <option value="Pending">Pending</option>
-        <option value="Done">Done</option>
-        <option value="In Progress">In Progress</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <select id="filterPriority" class="form-select" onchange="applyFilters()">
-        <option value="">All Priorities</option>
-        <option value="High">High</option>
-        <option value="Medium">Medium</option>
-        <option value="Low">Low</option>
-      </select>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Date</th>
+            <th>Team Member</th>
+            <th>Task</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="taskTableBody"></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Task Table -->
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Date</th>
-          <th>Team Member</th>
-          <th>Task</th>
-          <th>Status</th>
-          <th>Priority</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-     <tbody id="taskList"></tbody>
-    </table>
-  </div>
-</div>
+  <script>
+    let allTasks = [];
 
-<!-- Floating Add Button -->
-<button class="floating-btn" data-bs-toggle="modal" data-bs-target="#createTaskModal">+</button>
-<div id="taskList">Loading...</div>
+    async function fetchTasks() {
+      try {
+        const res = await fetch("https://rupalibhosale.app.n8n.cloud/webhook/client-tasks");
+        const data = await res.json();
 
+        if (!data.tasks || !Array.isArray(data.tasks)) {
+          throw new Error("Unexpected response format");
+        }
 
-<script>
-  fetch("https://rupalibhosale.app.n8n.cloud/webhook-test/client-tasks")
-    .then(res => res.json())
-    .then(data => {
-      console.log("Returned data:", data); // <--- Add this
-      const container = document.getElementById("taskList");
-      container.innerHTML = "";
+        allTasks = data.tasks;
+        renderTasks(allTasks);
+      } catch (error) {
+        const tableBody = document.getElementById("taskTableBody");
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-danger">❌ Failed to load tasks: ${error.message}</td></tr>`;
+      }
+    }
 
-      if (!Array.isArray(data)) {
-        container.innerText = "❌ Unexpected response format.";
+    function renderTasks(tasks) {
+      const tableBody = document.getElementById("taskTableBody");
+      if (!tasks.length) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-warning text-center">⚠️ No tasks found.</td></tr>`;
         return;
       }
 
-      data.forEach(task => {
-        const taskHTML = `
-          <div class="task">
-            <strong>${task.task}</strong><br>
-            👤 <b>${task.team_member}</b><br>
-            📅 ${new Date(task.date).toLocaleDateString()}<br>
-            ✅ Status: <b>${task.status}</b><br>
-            ⚡ Priority: ${task.priority}<br>
-            🗒️ Notes: ${task.notes}
-          </div>
-        `;
-        container.innerHTML += taskHTML;
-      });
-    })
-    .catch(err => {
-      document.getElementById("taskList").innerText = "❌ Failed to load tasks:";
-      console.error(err);
-    });
-</script>
+      tableBody.innerHTML = tasks.map(task => `
+        <tr>
+          <td>${task.date?.split("T")[0] || ''}</td>
+          <td>${task.team_member || ''}</td>
+          <td>${task.task || ''}</td>
+          <td>${task.status || ''}</td>
+          <td>${task.priority || ''}</td>
+          <td>${task.notes || ''}</td>
+        </tr>
+      `).join('');
+    }
 
+    function filterUrgent() {
+      const filtered = allTasks.filter(t => t.priority?.toLowerCase() === 'high');
+      renderTasks(filtered);
+    }
 
+    function filterFollowUp() {
+      const filtered = allTasks.filter(t => t.status?.toLowerCase() === 'pending');
+      renderTasks(filtered);
+    }
 
-<!-- Task Creation Modal -->
-<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="create-task-form">
-          <div class="mb-2">
-            <label class="form-label">Date</label>
-            <input type="date" class="form-control" id="taskDate" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Team Member</label>
-            <input type="text" class="form-control" id="taskMember" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Task</label>
-            <input type="text" class="form-control" id="taskDescription" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Priority</label>
-            <select class="form-select" id="taskPriority" required>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Status</label>
-            <select class="form-select" id="taskStatus" required>
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Done">Done</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Notes</label>
-            <textarea class="form-control" id="taskNotes" rows="2"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary mt-2 w-100">Create Task</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-  let allTasks = [];
+    function showAll() {
+      renderTasks(allTasks);
+    }
 
-  function renderTasks(tasks) {
-    const tableBody = document.getElementById("taskTableBody");
-    tableBody.innerHTML = "";
-
-    tasks.forEach(task => {
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td>${new Date(task.date).toLocaleDateString()}</td>
-        <td>${task.team_member}</td>
-        <td>${task.task}</td>
-        <td>${task.status}</td>
-        <td>${task.priority}</td>
-        <td>${task.notes}</td>
-      `;
-
-      tableBody.appendChild(row);
-    });
-  }
-
-  // ✅ Attach functions to global window object
-  window.filterUrgent = function () {
-    const urgentTasks = allTasks.filter(task => task.priority.toLowerCase() === "high");
-    renderTasks(urgentTasks);
-  }
-
-  window.filterFollowUp = function () {
-    const followUps = allTasks.filter(task =>
-      ["medium", "low"].includes(task.priority.toLowerCase())
-    );
-    renderTasks(followUps);
-  }
-
-  window.showAll = function () {
-    renderTasks(allTasks);
-  }
-
-  // ✅ Load initial tasks
-  fetch("https://rupalibhosale.app.n8n.cloud/webhook/client-tasks")
-    .then(response => response.json())
-    .then(data => {
-      if (data.tasks) {
-        allTasks = data.tasks;
-        renderTasks(allTasks);
-      } else {
-        throw new Error("Unexpected response format");
-      }
-    })
-    .catch(error => {
-      console.error("❌ Failed to load tasks:", error);
-    });
-</script>
+    // Fetch tasks on page load
+    fetchTasks();
+  </script>
 
 </body>
 </html>
