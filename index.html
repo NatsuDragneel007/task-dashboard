@@ -239,6 +239,61 @@
     </div>
   </div>
 </div>
+<script>
+  let allTasks = [];
+
+  function renderTasks(tasks) {
+    const tableBody = document.getElementById("taskTableBody");
+    tableBody.innerHTML = "";
+
+    tasks.forEach(task => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${new Date(task.date).toLocaleDateString()}</td>
+        <td>${task.team_member}</td>
+        <td>${task.task}</td>
+        <td>${task.status}</td>
+        <td>${task.priority}</td>
+        <td>${task.notes}</td>
+      `;
+
+      tableBody.appendChild(row);
+    });
+  }
+
+  // ✅ Attach functions to global window object
+  window.filterUrgent = function () {
+    const urgentTasks = allTasks.filter(task => task.priority.toLowerCase() === "high");
+    renderTasks(urgentTasks);
+  }
+
+  window.filterFollowUp = function () {
+    const followUps = allTasks.filter(task =>
+      ["medium", "low"].includes(task.priority.toLowerCase())
+    );
+    renderTasks(followUps);
+  }
+
+  window.showAll = function () {
+    renderTasks(allTasks);
+  }
+
+  // ✅ Load initial tasks
+  fetch("https://rupalibhosale.app.n8n.cloud/webhook/client-tasks")
+    .then(response => response.json())
+    .then(data => {
+      if (data.tasks) {
+        allTasks = data.tasks;
+        renderTasks(allTasks);
+      } else {
+        throw new Error("Unexpected response format");
+      }
+    })
+    .catch(error => {
+      console.error("❌ Failed to load tasks:", error);
+    });
+</script>
 
 </body>
 </html>
