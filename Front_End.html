@@ -1,107 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Team Task Dashboard</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f9f9f9;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Task Dashboard</title>
 
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      margin-bottom: 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .task {
-      background: white;
-      padding: 12px 16px;
-      margin-bottom: 12px;
-      border-left: 6px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.1);
-    }
-
-    .task.high {
-      border-left-color: red;
-    }
-
-    .task.medium {
-      border-left-color: orange;
-    }
-
-    .task.low {
-      border-left-color: green;
-    }
-
-    .empty {
-      color: #777;
-      font-style: italic;
-    }
-  </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!-- Your Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-  <h1>📋 Team Task Dashboard</h1>
-  <button onclick="loadTasks()">🔄 Refresh Tasks</button>
-  <div id="taskList">Loading...</div>
+<body class="p-4">
 
-  <script>
-    const WEBHOOK_URL = "https://rupalibhosale.app.n8n.cloud/webhook-test/webhook/client-tasks";
+    <h2 class="mb-4">🧠 Daily Task Dashboard</h2>
 
-    function loadTasks() {
-      document.getElementById("taskList").innerText = "Loading...";
+    <!-- Summary Section -->
+    <div id="summarySection" class="row mb-4">
+        <!-- Summary cards will be loaded here by JavaScript -->
+        <div class="col-12 text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading summary...</span>
+            </div>
+        </div>
+    </div>
 
-      fetch(WEBHOOK_URL)
-        .then(res => {
-          if (!res.ok) throw new Error("Server error");
-          return res.json();
-        })
-        .then(data => {
-          const container = document.getElementById("taskList");
-          container.innerHTML = "";
+    <!-- Filter Buttons -->
+    <div class="mb-3 d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-danger" onclick="filterTasks('High')">🚨 Urgent Only</button>
+        <button class="btn btn-outline-warning" onclick="filterByStatus('Pending')">📌 Follow-Ups</button>
+        <button class="btn btn-outline-secondary" onclick="showAll()">🔁 Show All</button>
+        <!-- Add more filters here if needed -->
+    </div>
 
-          if (!data.tasks || data.tasks.length === 0) {
-            container.innerHTML = "<div class='empty'>No tasks available.</div>";
-            return;
-          }
+    <!-- Task Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Team Member</th>
+                    <th>Task</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="taskList">
+                <!-- Task rows will be loaded here by JavaScript -->
+                <tr>
+                    <td colspan="6" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading tasks...</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-          data.tasks.forEach(task => {
-            const priorityClass = task.priority.toLowerCase();
-            container.innerHTML += `
-              <div class="task ${priorityClass}">
-                <strong>${task.task}</strong><br>
-                <em>${task.team_member}</em> – ${task.date}<br>
-                Status: <b>${task.status}</b><br>
-                Priority: ${task.priority}<br>
-                Notes: ${task.notes}
-              </div>
-            `;
-          });
-        })
-        .catch(err => {
-          document.getElementById("taskList").innerText = "❌ Failed to load tasks.";
-          console.error(err);
-        });
-    }
-
-    loadTasks(); // Load on page load
-  </script>
+    <!-- Bootstrap JavaScript Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Your Custom JavaScript -->
+    <script src="js/frontend.js"></script>
 </body>
 </html>
