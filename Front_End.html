@@ -1,66 +1,255 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Task Dashboard</title>
+// Global variable to store all fetched tasks
+let allTasks = [];
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <!-- Your Custom CSS -->
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body class="p-4">
+// --- Configuration ---
+const API_ENDPOINT = "https://rupalibhosale.app.n8n.cloud/webhook/client-tasks"; // Replace with your actual API endpoint if different
 
-    <h2 class="mb-4">🧠 Daily Task Dashboard</h2>
+// --- DOM Elements ---
+const taskListTbody = document.getElementById("taskList");
+const summarySection = document.getElementById("summarySection");
 
-    <!-- Summary Section -->
-    <div id="summarySection" class="row mb-4">
-        <!-- Summary cards will be loaded here by JavaScript -->
+// --- Functions ---
+
+/**
+ * Fetches tasks from the API and renders them.
+ * Handles loading states and errors.
+ */
+async function fetchTasks(filters = {}) {
+    // Display loading spinner for tasks
+    taskListTbody.innerHTML = `
+        <tr>
+            <td colspan="6" class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading tasks...</span>
+                </div>
+            </td>
+        </tr>
+    `;
+    // Clear previous summary and show loading
+    summarySection.innerHTML = `
         <div class="col-12 text-center">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading summary...</span>
             </div>
         </div>
-    </div>
+    `;
 
-    <!-- Filter Buttons -->
-    <div class="mb-3 d-flex flex-wrap gap-2">
-        <button class="btn btn-outline-danger" onclick="filterTasks('High')">🚨 Urgent Only</button>
-        <button class="btn btn-outline-warning" onclick="filterByStatus('Pending')">📌 Follow-Ups</button>
-        <button class="btn btn-outline-secondary" onclick="showAll()">🔁 Show All</button>
-        <!-- Add more filters here if needed -->
-    </div>
+    try {
+        // Construct URL with query parameters for filters
+        const queryParams = new URLSearchParams();
+        if (filters.priority) queryParams.append('priority', filters.priority);
+        if (filters.status) queryParams.append('status', filters.status);
+        // Add other filters here as needed (e.g., teamMember, dateRange)
 
-    <!-- Task Table -->
-    <div class="table-responsive">
-        <table class="table table-striped table-hover table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>Date</th>
-                    <th>Team Member</th>
-                    <th>Task</th>
-                    <th>Status</th>
-                    <th>Priority</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody id="taskList">
-                <!-- Task rows will be loaded here by JavaScript -->
-                <tr>
-                    <td colspan="6" class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading tasks...</span>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+        const url = `${API_ENDPOINT}?${queryParams.toString()}`;
 
-    <!-- Bootstrap JavaScript Bundle (includes Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Your Custom JavaScript -->
-    <script src="js/frontend.js"></script>
-</body>
-</html>
+        const res = await fetch(url);
+
+        // Check for HTTP errors
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Basic validation for expected response structure
+        if (!data || !Array.isArray(data.tasks)) {
+            throw new Error("Unexpected response format from API.");
+        }
+
+        allTasks = data.tasks; // Store the fetched tasks (important for client-side filtering/summaries)
+        renderTasks(allTasks); // Render the tasks first
+        const summaryStats = calculateSummaryStats(allTasks); // Calculate and render summary
+        renderSummary(summaryStats);
+
+    } catch (err) {
+        console.error("Error fetching tasks:", err);
+        taskListTbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">❌ Failed to load tasks: ${err.message}</td></tr>`;
+        summarySection.innerHTML = `<div class="col-12 text-center"><div class="alert alert-danger">❌ Failed to load summary data.</div></div>`;
+    }
+}
+
+/**
+ * Renders the list of tasks into the table body.
+ * Adds visual cues for overdue and high-priority tasks.
+ * @param {Array<Object>} tasks - The array of task objects to render.
+ */
+function renderTasks(tasks) {
+    taskListTbody.innerHTML = ""; // Clear existing rows
+
+    if (tasks.length === 0) {
+        taskListTbody.innerHTML = `<tr><td colspan="6" class="text-center">No matching tasks found.</td></tr>`;
+        return;
+    }
+
+    const today = new Date();
+    // Set time to midnight for accurate comparison
+    today.setHours(0, 0, 0, 0);
+
+    tasks.forEach(task => {
+        const row = document.createElement("tr");
+        const taskDate = new Date(task.date);
+        taskDate.setHours(0, 0, 0, 0); // Normalize task date
+
+        // Check if task is overdue (and not already completed)
+        const isOverdue = taskDate < today && task.status !== 'Completed';
+
+        // Apply Bootstrap classes for visual cues
+        if (isOverdue) {
+            row.classList.add('table-danger'); // Red for overdue
+        } else if (task.priority === 'High') {
+            row.classList.add('table-warning'); // Yellow for high priority (not overdue)
+        }
+
+        row.innerHTML = `
+            <td>${formatDate(task.date)}</td>
+            <td>${task.team_member || 'N/A'}</td>
+            <td>${task.task || 'N/A'}</td>
+            <td>${task.status || 'N/A'}</td>
+            <td>${task.priority || 'N/A'}</td>
+            <td>${task.notes || ''}</td>
+        `;
+        taskListTbody.appendChild(row);
+    });
+}
+
+/**
+ * Calculates key summary statistics from the task data.
+ * @param {Array<Object>} tasks - The array of task objects.
+ * @returns {Object} An object containing summary statistics.
+ */
+function calculateSummaryStats(tasks) {
+    const totalTasks = tasks.length;
+    const urgentTasks = tasks.filter(t => t.priority === 'High').length;
+    const pendingTasks = tasks.filter(t => t.status === 'Pending').length;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const overdueTasks = tasks.filter(t => {
+        const taskDate = new Date(t.date);
+        taskDate.setHours(0, 0, 0, 0);
+        return taskDate < today && t.status !== 'Completed';
+    }).length;
+
+    // Analyze team workload and identify potential issues
+    const teamMetrics = {}; // { teamMember: { total: X, pending: Y, overdue: Z } }
+
+    tasks.forEach(task => {
+        const member = task.team_member || 'Unassigned';
+        if (!teamMetrics[member]) {
+            teamMetrics[member] = { total: 0, pending: 0, overdue: 0 };
+        }
+        teamMetrics[member].total++;
+        if (task.status === 'Pending') {
+            teamMetrics[member].pending++;
+        }
+        const taskDate = new Date(task.date);
+        taskDate.setHours(0, 0, 0, 0);
+        if (taskDate < today && task.status !== 'Completed') {
+            teamMetrics[member].overdue++;
+        }
+    });
+
+    // Simple heuristic for "falling behind": more than 30% of their tasks are overdue, OR they have 3+ pending tasks
+    const fallingBehindMembers = Object.keys(teamMetrics)
+        .filter(member => {
+            const metrics = teamMetrics[member];
+            if (metrics.total === 0) return false; // Avoid division by zero
+            const overduePercentage = (metrics.overdue / metrics.total) * 100;
+            return overduePercentage > 30 || metrics.pending >= 3;
+        })
+        .join(', ') || 'None';
+
+    return {
+        totalTasks,
+        urgentTasks,
+        pendingTasks,
+        overdueTasks,
+        fallingBehindMembers
+    };
+}
+
+/**
+ * Renders the summary statistics into the designated section.
+ * @param {Object} stats - The summary statistics object.
+ */
+function renderSummary(stats) {
+    summarySection.innerHTML = `
+        <div class="col-md-3 mb-3">
+            <div class="card summary-card text-center p-3">
+                <h5 class="card-title">Total Tasks</h5>
+                <p class="card-text fs-3">${stats.totalTasks}</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card summary-card text-center p-3">
+                <h5 class="card-title">🚨 Urgent</h5>
+                <p class="card-text fs-3">${stats.urgentTasks}</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card summary-card text-center p-3">
+                <h5 class="card-title">📌 Follow-Ups</h5>
+                <p class="card-text fs-3">${stats.pendingTasks}</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card summary-card text-center p-3 ${stats.overdueTasks > 0 ? 'bg-danger text-white' : 'bg-light'}">
+                <h5 class="card-title">⏳ Overdue</h5>
+                <p class="card-text fs-3">${stats.overdueTasks}</p>
+            </div>
+        </div>
+        <div class="col-md-12 mb-4">
+            <div class="card summary-card text-center p-3 ${stats.fallingBehindMembers !== 'None' ? 'bg-info text-white' : 'bg-light'}">
+                <h5 class="card-title">🚩 Team Members Falling Behind</h5>
+                <p class="card-text fs-4">${stats.fallingBehindMembers}</p>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Filters tasks by priority.
+ * @param {string} priority - The priority level to filter by (e.g., 'High').
+ */
+function filterTasks(priority) {
+    const filtered = allTasks.filter(task => task.priority === priority);
+    renderTasks(filtered);
+}
+
+/**
+ * Filters tasks by status.
+ * @param {string} status - The status to filter by (e.g., 'Pending').
+ */
+function filterByStatus(status) {
+    const filtered = allTasks.filter(task => task.status === status);
+    renderTasks(filtered);
+}
+
+/**
+ * Resets the task list to show all tasks.
+ */
+function showAll() {
+    renderTasks(allTasks);
+}
+
+/**
+ * Formats a date string (e.g., "2023-10-27T10:00:00.000Z") to "YYYY-MM-DD".
+ * @param {string} dateString - The date string to format.
+ * @returns {string} The formatted date string or 'N/A'.
+ */
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+        return dateString.split("T")[0];
+    } catch (e) {
+        return 'Invalid Date';
+    }
+}
+
+// --- Initialization ---
+// Fetch tasks when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    fetchTasks();
+});
